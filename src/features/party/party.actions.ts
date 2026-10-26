@@ -1,5 +1,6 @@
 "use server";
 
+import { rememberNotice } from "@/shared/notice/notice";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { parseCreateParty, parsePerson, type CreatePartyInput } from "@/features/party/helpers/party.helpers";
@@ -23,8 +24,9 @@ import {
   startDraw,
 } from "@/features/party/services/party.service";
 
-function noticePath(path: string, notice: string) {
-  return `${path}?notice=${encodeURIComponent(notice)}`;
+async function redirectWithNotice(path: string, notice: string) {
+  await rememberNotice(notice);
+  redirect(path);
 }
 
 function messageFrom(caughtError: unknown) {
@@ -56,7 +58,7 @@ export async function addParticipantAction(manageToken: string, formData: FormDa
     await addParticipant(manageToken, parsed.value);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/manage/${manageToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/manage/${manageToken}`);
   redirect(`/manage/${manageToken}`);
@@ -67,7 +69,7 @@ export async function removeParticipantAction(manageToken: string, participantId
     await removeParticipant(manageToken, participantId);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/manage/${manageToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/manage/${manageToken}`);
   redirect(`/manage/${manageToken}`);
@@ -82,7 +84,7 @@ export async function addExclusionAction(manageToken: string, formData: FormData
     );
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/manage/${manageToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/manage/${manageToken}`);
   redirect(`/manage/${manageToken}`);
@@ -93,7 +95,7 @@ export async function removeExclusionAction(manageToken: string, exclusionId: st
     await removeExclusion(manageToken, exclusionId);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/manage/${manageToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/manage/${manageToken}`);
   redirect(`/manage/${manageToken}`);
@@ -105,10 +107,10 @@ export async function startDrawAction(manageToken: string) {
     const notice = result.sent
       ? "Names are drawn. Each person got an email."
       : "Names are drawn. Email was not sent, so copy the links below.";
-    redirect(noticePath(`/manage/${manageToken}`, notice));
+    await redirectWithNotice(`/manage/${manageToken}`, notice);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/manage/${manageToken}`, messageFrom(caughtError));
   }
 }
 
@@ -121,10 +123,10 @@ export async function resendAllLinksAction(manageToken: string) {
         : result.sentCount === 0
           ? "Email was not sent. Copy the links below."
           : "Some emails were not sent. Copy the links below.";
-    redirect(noticePath(`/manage/${manageToken}`, notice));
+    await redirectWithNotice(`/manage/${manageToken}`, notice);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/manage/${manageToken}`, messageFrom(caughtError));
   }
 }
 
@@ -136,10 +138,10 @@ export async function resendLinkAction(manageToken: string, participantId: strin
       String(formData.get("email") ?? ""),
     );
     const notice = result.sent ? "Link sent." : "Email was not sent. Copy the link below.";
-    redirect(noticePath(`/manage/${manageToken}`, notice));
+    await redirectWithNotice(`/manage/${manageToken}`, notice);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/manage/${manageToken}`, messageFrom(caughtError));
   }
 }
 
@@ -148,7 +150,7 @@ export async function deletePartyAction(manageToken: string) {
     await deleteParty(manageToken);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/manage/${manageToken}`, messageFrom(caughtError));
   }
   redirect("/");
 }
@@ -159,7 +161,7 @@ export async function reusePartyAction(manageToken: string, formData: FormData) 
     redirect(`/manage/${created.manageToken}`);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/manage/${manageToken}`, messageFrom(caughtError));
   }
 }
 
@@ -172,7 +174,7 @@ export async function addWishlistAction(accessToken: string, formData: FormData)
     );
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/party/${accessToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/party/${accessToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/party/${accessToken}`);
   redirect(`/party/${accessToken}`);
@@ -188,7 +190,7 @@ export async function updateWishlistAction(accessToken: string, itemId: string, 
     );
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/party/${accessToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/party/${accessToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/party/${accessToken}`);
   redirect(`/party/${accessToken}`);
@@ -199,7 +201,7 @@ export async function deleteWishlistAction(accessToken: string, itemId: string) 
     await deleteWishlistItem(accessToken, itemId);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/party/${accessToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/party/${accessToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/party/${accessToken}`);
   redirect(`/party/${accessToken}`);
@@ -210,7 +212,7 @@ export async function addNoteAction(accessToken: string, formData: FormData) {
     await addNote(accessToken, String(formData.get("body") ?? ""));
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/party/${accessToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/party/${accessToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/party/${accessToken}`);
   redirect(`/party/${accessToken}`);
@@ -226,7 +228,7 @@ export async function joinPartyAction(joinToken: string, formData: FormData) {
     redirect(`/party/${accessToken}`);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
-    redirect(noticePath(`/join/${joinToken}`, messageFrom(caughtError)));
+    await redirectWithNotice(`/join/${joinToken}`, messageFrom(caughtError));
   }
 }
 

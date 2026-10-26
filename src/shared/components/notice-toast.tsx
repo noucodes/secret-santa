@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { urlWithoutNotice } from "@/shared/helpers/notice.helpers";
+import { NOTICE_COOKIE, urlWithoutNotice } from "@/shared/helpers/notice.helpers";
 
 const NOTICE_VISIBLE_MS = 4000;
 const NOTICE_EXIT_MS = 220;
@@ -11,22 +11,30 @@ export function Notice({ message }: { message?: string }) {
   const [text, setText] = useState(message ?? "");
   const [mounted, setMounted] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const hideTimer = useRef<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!message) return;
-    setText(message);
-    setLeaving(false);
     const nextUrl = urlWithoutNotice(window.location.href);
     const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
     if (nextUrl !== currentUrl) {
       History.prototype.replaceState.call(window.history, window.history.state, "", nextUrl);
     }
-    const timer = window.setTimeout(() => setLeaving(true), NOTICE_VISIBLE_MS);
-    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!message) return;
+    setText(message);
+    setLeaving(false);
+    document.cookie = `${NOTICE_COOKIE}=; Max-Age=0; path=/`;
+    if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(() => {
+      hideTimer.current = null;
+      setLeaving(true);
+    }, NOTICE_VISIBLE_MS);
   }, [message]);
 
   useEffect(() => {
