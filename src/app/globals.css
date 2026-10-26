@@ -97,6 +97,128 @@ select {
   animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes notice-in {
+  from {
+    opacity: 0;
+    transform: translate3d(1.25rem, 0.85rem, 0);
+    filter: blur(8px);
+  }
+}
+
+@keyframes notice-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0.85rem, 0.45rem, 0);
+    filter: blur(6px);
+  }
+}
+
+@keyframes notice-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes notice-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.notice-in {
+  animation: notice-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.notice-out {
+  animation: notice-out 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notice-in {
+    animation: notice-fade-in 120ms ease both;
+  }
+
+  .notice-out {
+    animation: notice-fade-out 120ms ease forwards;
+  }
+}
+
+@keyframes step-forward {
+  from {
+    opacity: 0;
+    transform: translate3d(1.25rem, 0, 0);
+    filter: blur(8px);
+  }
+}
+
+@keyframes step-back {
+  from {
+    opacity: 0;
+    transform: translate3d(-1.25rem, 0, 0);
+    filter: blur(8px);
+  }
+}
+
+@keyframes paste-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.4rem, 0);
+    filter: blur(6px);
+  }
+}
+
+@keyframes paste-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, 0.25rem, 0);
+    filter: blur(4px);
+  }
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0.75rem, 0, 0);
+    filter: blur(6px);
+  }
+}
+
+.step-forward,
+.step-back,
+.paste-in,
+.row-in {
+  animation: step-forward 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.step-back {
+  animation-name: step-back;
+}
+
+.paste-in {
+  animation-name: paste-in;
+}
+
+.row-in {
+  animation-name: row-in;
+}
+
+.paste-out {
+  animation: paste-out 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-forward,
+  .step-back,
+  .paste-in,
+  .row-in {
+    animation: notice-fade-in 120ms ease both;
+  }
+
+  .paste-out {
+    animation: notice-fade-out 120ms ease forwards;
+  }
+}
+
 @supports (animation-timeline: view()) {
   .rise-in {
     animation: rise linear both;

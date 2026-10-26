@@ -1,0 +1,49 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { urlWithoutNotice } from "@/shared/helpers/notice.helpers";
+
+const NOTICE_VISIBLE_MS = 4000;
+const NOTICE_EXIT_MS = 220;
+
+export function Notice({ message }: { message?: string }) {
+  const [text, setText] = useState(message ?? "");
+  const [mounted, setMounted] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!message) return;
+    setText(message);
+    setLeaving(false);
+    const nextUrl = urlWithoutNotice(window.location.href);
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextUrl !== currentUrl) {
+      History.prototype.replaceState.call(window.history, window.history.state, "", nextUrl);
+    }
+    const timer = window.setTimeout(() => setLeaving(true), NOTICE_VISIBLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [message]);
+
+  useEffect(() => {
+    if (!leaving) return;
+    const timer = window.setTimeout(() => setText(""), NOTICE_EXIT_MS);
+    return () => window.clearTimeout(timer);
+  }, [leaving]);
+
+  if (!mounted || !text) return null;
+
+  return createPortal(
+    <p
+      role="status"
+      className={`notice-${leaving ? "out" : "in"} fixed right-4 bottom-4 z-50 w-fit max-w-[min(22rem,calc(100%-2rem))] rounded-xl border border-mint/30 bg-surface px-4 py-3 text-sm leading-snug text-ink shadow-[0_12px_32px_rgba(0,0,0,0.45)]`}
+    >
+      {text}
+    </p>,
+    document.body,
+  );
+}

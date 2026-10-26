@@ -42,7 +42,7 @@ export function SiteHeader({ active }: { active?: string }) {
           <Link
             key={link.label}
             href={link.href}
-            className={`border-b-2 pb-1 ${link.href === active ? "border-ember" : "border-transparent text-ink/85 hover:text-ink"} ${focus}`}
+            className={`border-b-2 pb-1 transition-colors duration-150 ${link.href === active ? "border-ember" : "border-transparent text-ink/85 hover:text-ink"} ${focus}`}
           >
             {link.label}
           </Link>

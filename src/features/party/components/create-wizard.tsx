@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPartyAction } from "@/features/party/party.actions";
 import { parsePeopleList, type PersonInput } from "@/features/party/helpers/party.helpers";
 import {
@@ -29,11 +29,14 @@ const steps = ["People", "Party", "Review"] as const;
 
 export function CreateWizard() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [stepMotion, setStepMotion] = useState<"forward" | "back" | null>(null);
   const [organizerName, setOrganizerName] = useState("");
   const [organizerEmail, setOrganizerEmail] = useState("");
   const [guests, setGuests] = useState<PersonInput[]>([emptyGuest(), emptyGuest()]);
   const [csvText, setCsvText] = useState("");
-  const [showCsv, setShowCsv] = useState(false);
+  const [csvOpen, setCsvOpen] = useState(false);
+  const [csvShown, setCsvShown] = useState(false);
+  const [freshGuestIndex, setFreshGuestIndex] = useState<number | null>(null);
   const [partyName, setPartyName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [location, setLocation] = useState("");
@@ -41,6 +44,22 @@ export function CreateWizard() {
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    if (csvOpen || !csvShown) return;
+    const timer = window.setTimeout(() => setCsvShown(false), 200);
+    return () => window.clearTimeout(timer);
+  }, [csvOpen, csvShown]);
+
+  function goToStep(next: 1 | 2 | 3) {
+    setStepMotion(next > step ? "forward" : "back");
+    setStep(next);
+  }
+
+  function addGuest() {
+    setFreshGuestIndex(guests.length);
+    setGuests((current) => [...current, emptyGuest()]);
+  }
 
   function updateGuest(index: number, field: keyof PersonInput, value: string) {
     setGuests((current) =>
@@ -77,7 +96,7 @@ export function CreateWizard() {
           const active = step === number;
           return (
             <li key={label}>
-              <span className={active ? chipActiveClass : chipClass}>{label}</span>
+              <span className={`${active ? chipActiveClass : chipClass} transition-colors duration-150`}>{label}</span>
             </li>
           );
         })}
@@ -85,6 +104,10 @@ export function CreateWizard() {
 
       {errorMessage ? <p className={`mb-4 ${errorTextClass}`}>{errorMessage}</p> : null}
 
+      <div
+        key={step}
+        className={stepMotion === "forward" ? "step-forward" : stepMotion === "back" ? "step-back" : undefined}
+      >
       {step === 1 ? (
         <div className="space-y-4">
           <h1 className={pageTitleClass}>Who is in</h1>
@@ -132,7 +155,7 @@ export function CreateWizard() {
               </thead>
               <tbody>
                 {guests.map((guest, index) => (
-                  <tr key={index} className="border-t border-line">
+                  <tr key={index} className={`border-t border-line ${index === freshGuestIndex ? "row-in" : ""}`}>
                     <td className="px-3 py-2 align-middle">
                       <input
                         aria-label={`Person ${index + 1} name`}
@@ -173,7 +196,7 @@ export function CreateWizard() {
               {guests.map((guest, index) => (
                 <li
                   key={index}
-                  className="grid grid-cols-[minmax(0,1fr)_auto] grid-rows-2 items-center gap-2 border-t border-line px-3 py-2 first:border-t-0"
+                  className={`grid grid-cols-[minmax(0,1fr)_auto] grid-rows-2 items-center gap-2 border-t border-line px-3 py-2 first:border-t-0 ${index === freshGuestIndex ? "row-in" : ""}`}
                 >
                   <input
                     aria-label={`Person ${index + 1} name`}
@@ -206,19 +229,26 @@ export function CreateWizard() {
             </ul>
           </div>
           <div className="flex flex-wrap gap-3">
-            <GhostButton type="button" onClick={() => setGuests((current) => [...current, emptyGuest()])}>
+            <GhostButton type="button" onClick={addGuest}>
               Add a person
             </GhostButton>
             <button
               type="button"
               className={textLinkClass}
-              onClick={() => setShowCsv((current) => !current)}
+              onClick={() => {
+                if (csvOpen) {
+                  setCsvOpen(false);
+                  return;
+                }
+                setCsvShown(true);
+                setCsvOpen(true);
+              }}
             >
               Paste a list
             </button>
           </div>
-          {showCsv ? (
-            <label className={labelClass}>
+          {csvShown ? (
+            <label className={`${labelClass} ${csvOpen ? "paste-in" : "paste-out"}`}>
               One person per line: Name, email
               <textarea
                 className={`${fieldClass} min-h-28`}
@@ -237,7 +267,7 @@ export function CreateWizard() {
               </button>
             </label>
           ) : null}
-          <InkButton type="button" onClick={() => setStep(2)}>
+          <InkButton type="button" onClick={() => goToStep(2)}>
             Next
           </InkButton>
         </div>
@@ -283,10 +313,10 @@ export function CreateWizard() {
             />
           </label>
           <div className="flex gap-3">
-            <GhostButton type="button" onClick={() => setStep(1)}>
+            <GhostButton type="button" onClick={() => goToStep(1)}>
               Back
             </GhostButton>
-            <InkButton type="button" onClick={() => setStep(3)}>
+            <InkButton type="button" onClick={() => goToStep(3)}>
               Next
             </InkButton>
           </div>
@@ -306,7 +336,7 @@ export function CreateWizard() {
             Guests are not emailed yet. You get a manage link first, then you start the draw.
           </p>
           <div className="flex gap-3">
-            <GhostButton type="button" onClick={() => setStep(2)} disabled={pending}>
+            <GhostButton type="button" onClick={() => goToStep(2)} disabled={pending}>
               Back
             </GhostButton>
             <InkButton type="button" disabled={pending} onClick={() => void submitParty()}>
@@ -315,6 +345,7 @@ export function CreateWizard() {
           </div>
         </div>
       ) : null}
+      </div>
     </div>
   );
 }

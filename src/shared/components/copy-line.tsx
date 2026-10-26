@@ -23,7 +23,7 @@ export function CopyLine({ label, path }: { label: string; path: string }) {
         <span className="break-all">{path}</span>
       </p>
       <button type="button" onClick={() => void copyPath()} className={ghostButtonClass}>
-        <span className={copied ? "text-success" : undefined}>{copied ? "Copied" : "Copy"}</span>
+        <span className={`transition-colors duration-150 ${copied ? "text-success" : ""}`}>{copied ? "Copied" : "Copy"}</span>
       </button>
     </div>
   );

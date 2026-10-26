@@ -4,6 +4,7 @@ import { inkButtonClass } from "@/shared/components/action-buttons";
 import { SiteFooter, SiteHeader } from "@/shared/components/site-chrome";
 
 export { DangerButton, GhostButton, InkButton, SubmitControl, dangerButtonClass, ghostButtonClass, inkButtonClass } from "@/shared/components/action-buttons";
+export { Notice } from "@/shared/components/notice-toast";
 
 const focus =
   "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_#f8c544,0_0_0_5px_rgba(248,197,68,0.2)]";
@@ -26,7 +27,7 @@ export const pageTitleClass =
 export const blockTitleClass = "text-[2rem] leading-[1.13] tracking-[-0.031em] text-ink";
 
 export const fieldClass =
-  "mt-2 min-h-12 w-full rounded-[10px] border border-hairline bg-lift px-3.5 text-[15px] leading-[1.3] tracking-[-0.01em] text-ink outline-none placeholder:text-mute/70 focus:border-gold focus:shadow-[0_0_0_3px_rgba(248,197,68,0.15)]";
+  "mt-2 min-h-12 w-full rounded-[10px] border border-hairline bg-lift px-3.5 text-[15px] leading-[1.3] tracking-[-0.01em] text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-mute/70 focus:border-gold focus:shadow-[0_0_0_3px_rgba(248,197,68,0.15)]";
 
 export function PageShell({ children, active }: { children: ReactNode; active?: string }) {
   return (
@@ -41,11 +42,6 @@ export function PageShell({ children, active }: { children: ReactNode; active?: 
       <SiteFooter />
     </div>
   );
-}
-
-export function Notice({ message }: { message?: string }) {
-  if (!message) return null;
-  return <p className="rounded-xl border border-mint/30 bg-mint/10 px-4 py-3 text-sm text-ink">{message}</p>;
 }
 
 export function MetaLine({ parts }: { parts: Array<string | null | undefined | false> }) {
