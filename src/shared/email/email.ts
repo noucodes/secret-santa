@@ -25,7 +25,7 @@ export async function sendMail(input: { to: string; subject: string; text: strin
       auth: { user, pass },
     });
     await transporter.sendMail({
-      from,
+      from: { name: "Secret Santa", address: from },
       to: input.to,
       subject: input.subject,
       text: input.text,

@@ -2,6 +2,7 @@ import { getDatabase } from "@/shared/db/db";
 import { getAppOrigin, sendMail } from "@/shared/email/email";
 import { ParticipantRole, PartyStatus } from "@/features/party/party.constants";
 import {
+  guestPageLetter,
   orderedPair,
   parsePerson,
   type CreatePartyInput,
@@ -392,7 +393,7 @@ export async function startDraw(manageToken: string) {
     const result = await sendMail({
       to: participant.email,
       subject: `Your Secret Santa page for ${party.name}`,
-      text: `Open your private page. It shows only the person you buy for.\n\n${await guestLink(participant.accessToken)}`,
+      text: guestPageLetter(party.name, await guestLink(participant.accessToken)),
     });
     if (!result.sent) sent = false;
   }
@@ -417,7 +418,7 @@ export async function changeEmailAndResend(manageToken: string, participantId: s
   const result = await sendMail({
     to: parsed.value.email,
     subject: `Your Secret Santa page for ${party.name}`,
-    text: `Open your private page.\n\n${await guestLink(participant.accessToken)}`,
+    text: guestPageLetter(party.name, await guestLink(participant.accessToken)),
   });
   return result;
 }

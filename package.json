@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test src/features/party/helpers/draw.helpers.test.ts"
+    "test": "node --experimental-strip-types --test src/features/party/helpers/draw.helpers.test.ts src/features/party/helpers/party.helpers.test.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

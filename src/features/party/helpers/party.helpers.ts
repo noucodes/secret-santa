@@ -95,6 +95,19 @@ export function parsePerson(name: string, email: string): { ok: true; value: Per
   return { ok: true, value: { name: trimmedName, email: trimmedEmail } };
 }
 
+export function guestPageLetter(partyName: string, pageLink: string) {
+  return [
+    "Merry Christmas.",
+    "",
+    `You are in ${partyName}, and the names are drawn. This page is only yours. It shows the person you buy for, and their list when they add one.`,
+    "",
+    pageLink,
+    "",
+    "Warm wishes,",
+    "Secret Santa",
+  ].join("\n");
+}
+
 export function orderedPair(leftId: string, rightId: string) {
   return leftId < rightId
     ? { participantAId: leftId, participantBId: rightId }
