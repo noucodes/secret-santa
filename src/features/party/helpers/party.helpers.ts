@@ -108,6 +108,10 @@ export function guestPageLetter(partyName: string, pageLink: string) {
   ].join("\n");
 }
 
+export function wishlistUpdatedLetter(gifteeName: string, pageLink: string) {
+  return [`${gifteeName} updated their wishlist.`, "", pageLink].join("\n");
+}
+
 export function orderedPair(leftId: string, rightId: string) {
   return leftId < rightId
     ? { participantAId: leftId, participantBId: rightId }

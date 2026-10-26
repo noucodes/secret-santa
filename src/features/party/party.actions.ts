@@ -3,6 +3,7 @@
 import { rememberNotice } from "@/shared/notice/notice";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { parseCreateParty, parsePerson, type CreatePartyInput } from "@/features/party/helpers/party.helpers";
 import {
   addExclusion,
@@ -14,6 +15,7 @@ import {
   changeEmailAndResend,
   createParty,
   deleteParty,
+  deliverWishlistMail,
   joinParty,
   PartyError,
   recoverLinks,
@@ -166,44 +168,62 @@ export async function reusePartyAction(manageToken: string, formData: FormData) 
 }
 
 export async function addWishlistAction(accessToken: string, formData: FormData) {
+  let queued = false;
   try {
-    await addWishlistItem(
+    const result = await addWishlistItem(
       accessToken,
       String(formData.get("label") ?? ""),
       String(formData.get("url") ?? ""),
     );
+    queued = result.queued;
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
     await redirectWithNotice(`/party/${accessToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/party/${accessToken}`);
+  if (queued) {
+    after(() => deliverWishlistMail());
+    await redirectWithNotice(`/party/${accessToken}`, "Your buyer will be emailed.");
+  }
   redirect(`/party/${accessToken}`);
 }
 
 export async function updateWishlistAction(accessToken: string, itemId: string, formData: FormData) {
+  let queued = false;
   try {
-    await updateWishlistItem(
+    const result = await updateWishlistItem(
       accessToken,
       itemId,
       String(formData.get("label") ?? ""),
       String(formData.get("url") ?? ""),
     );
+    queued = result.queued;
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
     await redirectWithNotice(`/party/${accessToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/party/${accessToken}`);
+  if (queued) {
+    after(() => deliverWishlistMail());
+    await redirectWithNotice(`/party/${accessToken}`, "Your buyer will be emailed.");
+  }
   redirect(`/party/${accessToken}`);
 }
 
 export async function deleteWishlistAction(accessToken: string, itemId: string) {
+  let queued = false;
   try {
-    await deleteWishlistItem(accessToken, itemId);
+    const result = await deleteWishlistItem(accessToken, itemId);
+    queued = result.queued;
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
     await redirectWithNotice(`/party/${accessToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/party/${accessToken}`);
+  if (queued) {
+    after(() => deliverWishlistMail());
+    await redirectWithNotice(`/party/${accessToken}`, "Your buyer will be emailed.");
+  }
   redirect(`/party/${accessToken}`);
 }
 

@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { guestPageLetter } from "./party.helpers.ts";
+import { guestPageLetter, wishlistUpdatedLetter } from "./party.helpers.ts";
+
+describe("wishlistUpdatedLetter", () => {
+  it("tells the buyer their giftee updated the list", () => {
+    const letter = wishlistUpdatedLetter("Ada", "http://localhost:3000/party/buyer");
+
+    assert.match(letter, /Ada updated their wishlist/);
+    assert.match(letter, /http:\/\/localhost:3000\/party\/buyer/);
+  });
+});
 
 describe("guestPageLetter", () => {
   it("welcomes the guest and keeps the private link", () => {

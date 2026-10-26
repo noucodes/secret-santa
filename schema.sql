@@ -48,3 +48,12 @@ CREATE TABLE notes (
   body text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE TABLE wishlist_mail (
+  id uuid PRIMARY KEY,
+  party_id uuid NOT NULL REFERENCES parties (id) ON DELETE CASCADE,
+  giftee_id uuid NOT NULL REFERENCES participants (id) ON DELETE CASCADE,
+  attempts int NOT NULL DEFAULT 0,
+  next_attempt_at timestamptz NOT NULL DEFAULT now(),
+  sent_at timestamptz
+);

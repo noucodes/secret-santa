@@ -5,6 +5,7 @@ import {
   guestPageLetter,
   orderedPair,
   parsePerson,
+  wishlistUpdatedLetter,
   type CreatePartyInput,
   type PersonInput,
 } from "@/features/party/helpers/party.helpers";
@@ -518,6 +519,70 @@ async function requireGuest(accessToken: string) {
   return guest;
 }
 
+async function enqueueWishlistMail(partyId: string, gifteeId: string) {
+  const sql = getDatabase();
+  const buyers = await sql`
+    SELECT id
+    FROM participants
+    WHERE party_id = ${partyId}
+      AND recipient_id = ${gifteeId}
+    LIMIT 1
+  `;
+  if (buyers.length === 0) return false;
+  await sql`
+    INSERT INTO wishlist_mail (id, party_id, giftee_id)
+    VALUES (${crypto.randomUUID()}, ${partyId}, ${gifteeId})
+  `;
+  return true;
+}
+
+export async function deliverWishlistMail() {
+  const sql = getDatabase();
+  const jobs = (await sql`
+    SELECT id, party_id, giftee_id, attempts
+    FROM wishlist_mail
+    WHERE sent_at IS NULL
+      AND attempts < 3
+      AND next_attempt_at <= now()
+  `) as { id: string; party_id: string; giftee_id: string; attempts: number }[];
+
+  for (const job of jobs) {
+    const buyers = (await sql`
+      SELECT buyer.email, buyer.access_token, giftee.name AS giftee_name
+      FROM participants buyer
+      JOIN participants giftee ON giftee.id = ${job.giftee_id}
+      WHERE buyer.party_id = ${job.party_id}
+        AND buyer.recipient_id = ${job.giftee_id}
+    `) as { email: string; access_token: string; giftee_name: string }[];
+    const buyer = buyers[0];
+    if (!buyer) {
+      await sql`UPDATE wishlist_mail SET attempts = 3 WHERE id = ${job.id}`;
+      continue;
+    }
+    const result = await sendMail({
+      to: buyer.email,
+      subject: `${buyer.giftee_name} updated their wishlist`,
+      text: wishlistUpdatedLetter(buyer.giftee_name, await guestLink(buyer.access_token)),
+    });
+    if (result.sent) {
+      await sql`UPDATE wishlist_mail SET sent_at = now() WHERE id = ${job.id}`;
+      continue;
+    }
+    const attempts = Number(job.attempts) + 1;
+    if (attempts >= 3) {
+      await sql`UPDATE wishlist_mail SET attempts = ${attempts} WHERE id = ${job.id}`;
+      continue;
+    }
+    const delayMinutes = attempts === 1 ? 1 : 5;
+    const nextAttemptAt = new Date(Date.now() + delayMinutes * 60_000).toISOString();
+    await sql`
+      UPDATE wishlist_mail
+      SET attempts = ${attempts}, next_attempt_at = ${nextAttemptAt}
+      WHERE id = ${job.id}
+    `;
+  }
+}
+
 export async function updateWishlistItem(accessToken: string, itemId: string, label: string, url: string) {
   const guest = await requireGuest(accessToken);
   const trimmedLabel = label.trim();
@@ -531,6 +596,7 @@ export async function updateWishlistItem(accessToken: string, itemId: string, la
     RETURNING id
   `;
   if (rows.length === 0) throw new PartyError("That gift idea is gone.");
+  return { queued: await enqueueWishlistMail(guest.party_id, guest.id) };
 }
 
 export async function deleteWishlistItem(accessToken: string, itemId: string) {
@@ -542,6 +608,7 @@ export async function deleteWishlistItem(accessToken: string, itemId: string) {
     RETURNING id
   `;
   if (rows.length === 0) throw new PartyError("That gift idea is gone.");
+  return { queued: await enqueueWishlistMail(guest.party_id, guest.id) };
 }
 
 export async function addWishlistItem(accessToken: string, label: string, url: string) {
@@ -559,6 +626,7 @@ export async function addWishlistItem(accessToken: string, label: string, url: s
       ${trimmedUrl.length > 0 ? trimmedUrl : null}
     )
   `;
+  return { queued: await enqueueWishlistMail(guest.party_id, guest.id) };
 }
 
 export async function addNote(accessToken: string, body: string) {
