@@ -83,7 +83,7 @@ export function ManageScreen({
                 Email
                 <input name="email" type="email" defaultValue={participant.email} className={fieldClass} />
               </label>
-              <GhostButton>Save and resend</GhostButton>
+              <GhostButton>Send</GhostButton>
             </form>
             {participant.role === ParticipantRole.Guest && !rosterLocked ? (
               <form action={removeParticipantAction.bind(null, manageToken, participant.id)}>
