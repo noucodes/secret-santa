@@ -117,12 +117,6 @@ select {
   }
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  .spotlight {
-    background: #c2452a;
-  }
-}
-
 /* ponytail: stars are CSS gradients; swap for an illustrated sky image if wanted */
 .night-sky {
   background:

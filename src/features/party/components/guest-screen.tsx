@@ -3,6 +3,7 @@ import { PartyStatus } from "@/features/party/party.constants";
 import type { GuestView, WishlistItemView } from "@/features/party/services/party.service";
 import {
   blockTitleClass,
+  cardClass,
   fieldClass,
   GhostButton,
   hintClass,
@@ -24,7 +25,7 @@ function WishlistRows({
   emptyLabel: string;
 }) {
   if (items.length === 0) {
-    return <p className="rounded-[10px] bg-lift px-4 py-5 text-sm text-mute">{emptyLabel}</p>;
+    return <p className="text-sm font-medium text-mute">{emptyLabel}</p>;
   }
   return (
     <ul className="space-y-3">
@@ -64,9 +65,9 @@ export function GuestScreen({
     <div className="enter mx-auto max-w-xl space-y-6">
       <MetaLine parts={[guest.partyName, guest.eventDate, guest.budget ? `Budget ${guest.budget}` : ""]} />
       {drawn ? (
-        <div className="spotlight flex min-h-48 flex-col justify-end rounded-[30px] bg-[linear-gradient(165deg,#ff8a5c_0%,#e2502e_40%,#1f2f6e_100%)] shadow-[0_24px_60px_rgba(226,80,46,0.3)] px-8 py-8 text-white">
-          <p className="text-[13px] font-medium leading-[1.2]">Your match</p>
-          <h1 className="mt-3 font-fancy! text-[clamp(2.5rem,6vw,3.875rem)] font-bold! leading-[1.05] tracking-normal!">
+        <div className={cardClass}>
+          <p className="text-sm font-medium text-mute">Your match</p>
+          <h1 className="mt-2 font-fancy! text-[clamp(2rem,4vw,2.75rem)] font-bold! leading-[1.1] tracking-normal! text-gold">
             {guest.recipientName}
           </h1>
         </div>
