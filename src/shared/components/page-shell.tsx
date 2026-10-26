@@ -1,16 +1,12 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { inkButtonClass } from "@/shared/components/action-buttons";
 import { SiteFooter, SiteHeader } from "@/shared/components/site-chrome";
+
+export { DangerButton, GhostButton, InkButton, SubmitControl, dangerButtonClass, ghostButtonClass, inkButtonClass } from "@/shared/components/action-buttons";
 
 const focus =
   "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_#f8c544,0_0_0_5px_rgba(248,197,68,0.2)]";
-
-const press =
-  "inline-flex h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-full px-5 text-sm font-semibold leading-none tracking-[-0.01em] transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100";
-
-export const inkButtonClass = `${press} bg-gold text-[#2a1a00] shadow-[0_8px_24px_rgba(248,197,68,0.25)] hover:bg-[#ffd25e] ${focus}`;
-export const ghostButtonClass = `${press} border border-white/15 bg-white/5 text-ink hover:bg-white/10 ${focus}`;
-export const dangerButtonClass = `${press} border border-coral/30 bg-coral/10 text-coral hover:bg-coral/20 ${focus}`;
 
 export const chipClass =
   "inline-flex h-10 items-center rounded-full border border-white/10 bg-white/5 px-3.5 text-sm font-medium text-mute";
@@ -31,13 +27,6 @@ export const blockTitleClass = "text-[2rem] leading-[1.13] tracking-[-0.031em] t
 
 export const fieldClass =
   "mt-2 min-h-12 w-full rounded-[10px] border border-hairline bg-lift px-3.5 text-[15px] leading-[1.3] tracking-[-0.01em] text-ink outline-none placeholder:text-mute/70 focus:border-gold focus:shadow-[0_0_0_3px_rgba(248,197,68,0.15)]";
-
-type ActionButtonProps = {
-  children: ReactNode;
-  type?: "submit" | "button";
-  disabled?: boolean;
-  onClick?: () => void;
-};
 
 export function PageShell({ children, active }: { children: ReactNode; active?: string }) {
   return (
@@ -68,30 +57,6 @@ export function MetaLine({ parts }: { parts: Array<string | null | undefined | f
         <span key={`${part}-${index}`}>{part}</span>
       ))}
     </p>
-  );
-}
-
-export function InkButton({ children, type = "submit", disabled, onClick }: ActionButtonProps) {
-  return (
-    <button type={type} disabled={disabled} onClick={onClick} className={inkButtonClass}>
-      {children}
-    </button>
-  );
-}
-
-export function GhostButton({ children, type = "submit", disabled, onClick }: ActionButtonProps) {
-  return (
-    <button type={type} disabled={disabled} onClick={onClick} className={ghostButtonClass}>
-      {children}
-    </button>
-  );
-}
-
-export function DangerButton({ children, type = "submit", disabled, onClick }: ActionButtonProps) {
-  return (
-    <button type={type} disabled={disabled} onClick={onClick} className={dangerButtonClass}>
-      {children}
-    </button>
   );
 }
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { GiftIcon, PenIcon, TrashIcon } from "@phosphor-icons/react/ssr";
 import { deleteWishlistAction, updateWishlistAction } from "@/features/party/party.actions";
 import type { WishlistItemView } from "@/features/party/services/party.service";
-import { fieldClass, hintClass, InkButton, labelClass } from "@/shared/components/page-shell";
+import { fieldClass, hintClass, InkButton, labelClass, SubmitControl } from "@/shared/components/page-shell";
 
 const iconButtonClass =
   "inline-flex size-8 shrink-0 items-center justify-center rounded-full hover:bg-white/10 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_#f8c544,0_0_0_5px_rgba(248,197,68,0.2)]";
@@ -88,9 +88,13 @@ export function OwnWishlist({
                     <PenIcon size={20} weight="bold" />
                   </button>
                   <form action={deleteWishlistAction.bind(null, accessToken, item.id)}>
-                    <button type="submit" aria-label={`Delete ${item.label}`} className={`${iconButtonClass} text-coral`}>
+                    <SubmitControl
+                      ariaLabel={`Delete ${item.label}`}
+                      className={`${iconButtonClass} text-coral`}
+                      replace
+                    >
                       <TrashIcon size={20} weight="bold" />
-                    </button>
+                    </SubmitControl>
                   </form>
                 </div>
               </div>

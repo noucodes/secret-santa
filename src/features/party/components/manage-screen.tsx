@@ -25,6 +25,7 @@ import {
   Notice,
   pageTitleClass,
   panelClass,
+  SubmitControl,
 } from "@/shared/components/page-shell";
 
 export function ManageScreen({
@@ -76,9 +77,7 @@ export function ManageScreen({
             </form>
             {participant.role === ParticipantRole.Guest && !rosterLocked ? (
               <form action={removeParticipantAction.bind(null, manageToken, participant.id)}>
-                <button type="submit" className="text-sm font-medium text-mute">
-                  Remove
-                </button>
+                <SubmitControl className="text-sm font-medium text-mute">Remove</SubmitControl>
               </form>
             ) : null}
           </div>
@@ -111,9 +110,7 @@ export function ManageScreen({
             </span>
             {party.status === PartyStatus.Pending ? (
               <form action={removeExclusionAction.bind(null, manageToken, exclusion.id)}>
-                <button type="submit" className="font-medium text-mute">
-                  Remove
-                </button>
+                <SubmitControl className="font-medium text-mute">Remove</SubmitControl>
               </form>
             ) : null}
           </div>
