@@ -40,6 +40,18 @@ html {
   accent-color: var(--link);
 }
 
+a[href],
+button:not(:disabled),
+summary,
+select,
+label:has(input[type="checkbox"], input[type="radio"]) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 h1,
 h2,
 h3 {
