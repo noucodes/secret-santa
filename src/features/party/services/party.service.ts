@@ -43,7 +43,6 @@ type WishlistRow = {
   participant_id: string;
   label: string;
   url: string | null;
-  taken: boolean;
 };
 
 export type ParticipantView = {
@@ -72,7 +71,6 @@ export type WishlistItemView = {
   id: string;
   label: string;
   url: string | null;
-  taken: boolean;
 };
 
 export type GuestView = {
@@ -246,8 +244,8 @@ export async function createParty(input: CreatePartyInput) {
     ),
     ...wishlistCopies.map(
       (item) => txn`
-        INSERT INTO wishlist_items (id, participant_id, label, url, taken)
-        VALUES (${item.id}, ${item.participantId}, ${item.label}, ${item.url}, false)
+        INSERT INTO wishlist_items (id, participant_id, label, url)
+        VALUES (${item.id}, ${item.participantId}, ${item.label}, ${item.url})
       `,
     ),
   ]);
@@ -301,8 +299,8 @@ export async function addParticipant(manageToken: string, person: PersonInput) {
     `,
     ...items.map(
       (item) => txn`
-        INSERT INTO wishlist_items (id, participant_id, label, url, taken)
-        VALUES (${crypto.randomUUID()}, ${participantId}, ${item.label}, ${item.url}, false)
+        INSERT INTO wishlist_items (id, participant_id, label, url)
+        VALUES (${crypto.randomUUID()}, ${participantId}, ${item.label}, ${item.url})
       `,
     ),
   ]);
@@ -448,7 +446,7 @@ export async function getGuestParty(accessToken: string): Promise<GuestView> {
   if (!party) throw new PartyError("Party not found.");
 
   const ownWishlist = (await sql`
-    SELECT id, participant_id, label, url, taken
+    SELECT id, participant_id, label, url
     FROM wishlist_items
     WHERE participant_id = ${participant.id}
     ORDER BY created_at
@@ -462,7 +460,7 @@ export async function getGuestParty(accessToken: string): Promise<GuestView> {
     `) as { name: string }[];
     recipientName = recipientRows[0]?.name ?? null;
     recipientWishlist = (await sql`
-      SELECT id, participant_id, label, url, taken
+      SELECT id, participant_id, label, url
       FROM wishlist_items
       WHERE participant_id = ${participant.recipient_id}
       ORDER BY created_at
@@ -480,7 +478,6 @@ export async function getGuestParty(accessToken: string): Promise<GuestView> {
     id: item.id,
     label: item.label,
     url: item.url,
-    taken: item.taken,
   });
 
   return {
@@ -511,6 +508,32 @@ async function requireGuest(accessToken: string) {
   return guest;
 }
 
+export async function updateWishlistItem(accessToken: string, itemId: string, label: string, url: string) {
+  const guest = await requireGuest(accessToken);
+  const trimmedLabel = label.trim();
+  if (!trimmedLabel) throw new PartyError("Add a gift idea.");
+  const trimmedUrl = url.trim();
+  const sql = getDatabase();
+  const rows = await sql`
+    UPDATE wishlist_items
+    SET label = ${trimmedLabel}, url = ${trimmedUrl.length > 0 ? trimmedUrl : null}
+    WHERE id = ${itemId} AND participant_id = ${guest.id}
+    RETURNING id
+  `;
+  if (rows.length === 0) throw new PartyError("That gift idea is gone.");
+}
+
+export async function deleteWishlistItem(accessToken: string, itemId: string) {
+  const guest = await requireGuest(accessToken);
+  const sql = getDatabase();
+  const rows = await sql`
+    DELETE FROM wishlist_items
+    WHERE id = ${itemId} AND participant_id = ${guest.id}
+    RETURNING id
+  `;
+  if (rows.length === 0) throw new PartyError("That gift idea is gone.");
+}
+
 export async function addWishlistItem(accessToken: string, label: string, url: string) {
   const guest = await requireGuest(accessToken);
   const trimmedLabel = label.trim();
@@ -518,31 +541,14 @@ export async function addWishlistItem(accessToken: string, label: string, url: s
   const trimmedUrl = url.trim();
   const sql = getDatabase();
   await sql`
-    INSERT INTO wishlist_items (id, participant_id, label, url, taken)
+    INSERT INTO wishlist_items (id, participant_id, label, url)
     VALUES (
       ${crypto.randomUUID()},
       ${guest.id},
       ${trimmedLabel},
-      ${trimmedUrl.length > 0 ? trimmedUrl : null},
-      false
+      ${trimmedUrl.length > 0 ? trimmedUrl : null}
     )
   `;
-}
-
-export async function setItemTaken(accessToken: string, itemId: string, taken: boolean) {
-  const guest = await requireGuest(accessToken);
-  const sql = getDatabase();
-  const rows = (await sql`
-    SELECT participant_id
-    FROM wishlist_items
-    WHERE id = ${itemId}
-  `) as { participant_id: string }[];
-  const item = rows[0];
-  if (!item) throw new PartyError("That gift idea is gone.");
-  const allowed =
-    item.participant_id === guest.id || item.participant_id === guest.recipient_id;
-  if (!allowed) throw new PartyError("You can only update a list you can see.");
-  await sql`UPDATE wishlist_items SET taken = ${taken} WHERE id = ${itemId}`;
 }
 
 export async function addNote(accessToken: string, body: string) {
@@ -604,8 +610,8 @@ export async function joinParty(joinToken: string, name: string, email: string) 
     `,
     ...items.map(
       (item) => txn`
-        INSERT INTO wishlist_items (id, participant_id, label, url, taken)
-        VALUES (${crypto.randomUUID()}, ${participantId}, ${item.label}, ${item.url}, false)
+        INSERT INTO wishlist_items (id, participant_id, label, url)
+        VALUES (${crypto.randomUUID()}, ${participantId}, ${item.label}, ${item.url})
       `,
     ),
   ]);

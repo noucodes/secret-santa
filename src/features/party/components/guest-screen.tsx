@@ -1,11 +1,12 @@
-import { addNoteAction, addWishlistAction, setTakenAction } from "@/features/party/party.actions";
+import { GiftIcon } from "@phosphor-icons/react/ssr";
+import { OwnWishlist } from "@/features/party/components/own-wishlist";
+import { addNoteAction, addWishlistAction } from "@/features/party/party.actions";
 import { PartyStatus } from "@/features/party/party.constants";
 import type { GuestView, WishlistItemView } from "@/features/party/services/party.service";
 import {
   blockTitleClass,
   cardClass,
   fieldClass,
-  GhostButton,
   hintClass,
   InkButton,
   labelClass,
@@ -15,35 +16,38 @@ import {
   panelClass,
 } from "@/shared/components/page-shell";
 
-function WishlistRows({
-  accessToken,
-  items,
-  emptyLabel,
-}: {
-  accessToken: string;
-  items: WishlistItemView[];
-  emptyLabel: string;
-}) {
+function GiftMark() {
+  return (
+    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold" aria-hidden>
+      <GiftIcon size={22} weight="fill" />
+    </span>
+  );
+}
+
+function WishlistRows({ items, emptyLabel }: { items: WishlistItemView[]; emptyLabel: string }) {
   if (items.length === 0) {
-    return <p className="text-sm font-medium text-mute">{emptyLabel}</p>;
+    return (
+      <p className="flex items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3 text-sm font-medium text-ink">
+        <GiftMark />
+        {emptyLabel}
+      </p>
+    );
   }
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-2">
       {items.map((item) => (
-        <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 text-sm">
-          <span>
-            {item.url ? (
-              <a href={item.url} className="font-medium text-link underline decoration-link/40 underline-offset-4">
-                {item.label}
-              </a>
-            ) : (
-              item.label
-            )}
-            {item.taken ? <span className="ml-2 text-mute">Taken</span> : null}
-          </span>
-          <form action={setTakenAction.bind(null, accessToken, item.id, !item.taken)}>
-            <GhostButton>{item.taken ? "Mark open" : "Mark taken"}</GhostButton>
-          </form>
+        <li key={item.id} className="flex items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3">
+          <GiftMark />
+          {item.url ? (
+            <a
+              href={item.url}
+              className="text-base font-semibold text-link underline decoration-link/40 underline-offset-4"
+            >
+              {item.label}
+            </a>
+          ) : (
+            <span className="text-base font-semibold text-ink">{item.label}</span>
+          )}
         </li>
       ))}
     </ul>
@@ -83,17 +87,13 @@ export function GuestScreen({
       {drawn ? (
         <section className={panelClass}>
           <h2 className={blockTitleClass}>{guest.recipientName}&apos;s list</h2>
-          <WishlistRows
-            accessToken={accessToken}
-            items={guest.recipientWishlist}
-            emptyLabel="Nothing on this list yet."
-          />
+          <WishlistRows items={guest.recipientWishlist} emptyLabel="Nothing in this list yet." />
         </section>
       ) : null}
 
       <section className={panelClass}>
         <h2 className={blockTitleClass}>Your list</h2>
-        <WishlistRows
+        <OwnWishlist
           accessToken={accessToken}
           items={guest.ownWishlist}
           emptyLabel="Nothing here yet. Add a gift below."

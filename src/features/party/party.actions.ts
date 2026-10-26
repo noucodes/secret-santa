@@ -8,6 +8,8 @@ import {
   addNote,
   addParticipant,
   addWishlistItem,
+  deleteWishlistItem,
+  updateWishlistItem,
   changeEmailAndResend,
   createParty,
   deleteParty,
@@ -17,7 +19,6 @@ import {
   removeExclusion,
   removeParticipant,
   reuseParty,
-  setItemTaken,
   startDraw,
 } from "@/features/party/services/party.service";
 
@@ -160,9 +161,25 @@ export async function addWishlistAction(accessToken: string, formData: FormData)
   redirect(`/party/${accessToken}`);
 }
 
-export async function setTakenAction(accessToken: string, itemId: string, taken: boolean) {
+export async function updateWishlistAction(accessToken: string, itemId: string, formData: FormData) {
   try {
-    await setItemTaken(accessToken, itemId, taken);
+    await updateWishlistItem(
+      accessToken,
+      itemId,
+      String(formData.get("label") ?? ""),
+      String(formData.get("url") ?? ""),
+    );
+  } catch (caughtError) {
+    if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
+    redirect(noticePath(`/party/${accessToken}`, messageFrom(caughtError)));
+  }
+  revalidatePath(`/party/${accessToken}`);
+  redirect(`/party/${accessToken}`);
+}
+
+export async function deleteWishlistAction(accessToken: string, itemId: string) {
+  try {
+    await deleteWishlistItem(accessToken, itemId);
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
     redirect(noticePath(`/party/${accessToken}`, messageFrom(caughtError)));
