@@ -32,7 +32,6 @@
   ],
   "exclude": [
     "node_modules",
-    "src/features/party/helpers/draw.helpers.test.ts",
-    "src/features/party/helpers/party.helpers.test.ts"
+    "**/*.test.ts"
   ]
 }
