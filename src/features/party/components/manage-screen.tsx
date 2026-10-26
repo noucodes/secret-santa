@@ -1,9 +1,11 @@
+import { EnvelopeSimpleIcon } from "@phosphor-icons/react/ssr";
 import {
   addExclusionAction,
   addParticipantAction,
   deletePartyAction,
   removeExclusionAction,
   removeParticipantAction,
+  resendAllLinksAction,
   resendLinkAction,
   reusePartyAction,
   startDrawAction,
@@ -58,7 +60,15 @@ export function ManageScreen({
       </p>
 
       <section className={panelClass}>
-        <h2 className={blockTitleClass}>People</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className={blockTitleClass}>People</h2>
+          <form action={resendAllLinksAction.bind(null, manageToken)}>
+            <InkButton>
+              <EnvelopeSimpleIcon size={16} weight="bold" aria-hidden />
+              Email everyone
+            </InkButton>
+          </form>
+        </div>
         {party.participants.map((participant) => (
           <div key={participant.id} className="space-y-3 border-t border-line pt-4">
             <p className="font-medium">

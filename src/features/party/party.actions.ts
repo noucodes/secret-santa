@@ -16,6 +16,7 @@ import {
   joinParty,
   PartyError,
   recoverLinks,
+  resendAllLinks,
   removeExclusion,
   removeParticipant,
   reuseParty,
@@ -104,6 +105,22 @@ export async function startDrawAction(manageToken: string) {
     const notice = result.sent
       ? "Names are drawn. Each person got an email."
       : "Names are drawn. Email was not sent, so copy the links below.";
+    redirect(noticePath(`/manage/${manageToken}`, notice));
+  } catch (caughtError) {
+    if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
+    redirect(noticePath(`/manage/${manageToken}`, messageFrom(caughtError)));
+  }
+}
+
+export async function resendAllLinksAction(manageToken: string) {
+  try {
+    const result = await resendAllLinks(manageToken);
+    const notice =
+      result.sentCount === result.total
+        ? "Links sent to everyone."
+        : result.sentCount === 0
+          ? "Email was not sent. Copy the links below."
+          : "Some emails were not sent. Copy the links below.";
     redirect(noticePath(`/manage/${manageToken}`, notice));
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;

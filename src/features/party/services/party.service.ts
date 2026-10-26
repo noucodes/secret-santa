@@ -173,6 +173,19 @@ async function guestLink(accessToken: string) {
   return `${origin}/party/${accessToken}`;
 }
 
+async function sendGuestPageLetters(party: PartyView) {
+  let sentCount = 0;
+  for (const participant of party.participants) {
+    const result = await sendMail({
+      to: participant.email,
+      subject: `Your Secret Santa page for ${party.name}`,
+      text: guestPageLetter(party.name, await guestLink(participant.accessToken)),
+    });
+    if (result.sent) sentCount += 1;
+  }
+  return { sentCount, total: party.participants.length };
+}
+
 async function manageLink(accessToken: string) {
   const origin = await getAppOrigin();
   return `${origin}/manage/${accessToken}`;
@@ -386,16 +399,13 @@ export async function startDraw(manageToken: string) {
     `,
   ]);
 
-  let sent = true;
-  for (const participant of party.participants) {
-    const result = await sendMail({
-      to: participant.email,
-      subject: `Your Secret Santa page for ${party.name}`,
-      text: guestPageLetter(party.name, await guestLink(participant.accessToken)),
-    });
-    if (!result.sent) sent = false;
-  }
-  return { sent };
+  const letters = await sendGuestPageLetters(party);
+  return { sent: letters.sentCount === letters.total };
+}
+
+export async function resendAllLinks(manageToken: string) {
+  const party = await requireManageParty(manageToken);
+  return sendGuestPageLetters(party);
 }
 
 export async function changeEmailAndResend(manageToken: string, participantId: string, email: string) {
