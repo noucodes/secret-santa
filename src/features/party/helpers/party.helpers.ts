@@ -97,13 +97,13 @@ export function parsePerson(name: string, email: string): { ok: true; value: Per
 
 export function guestPageLetter(partyName: string, pageLink: string) {
   return [
-    "Merry Christmas.",
+    "Merry Christmas 🎄",
     "",
-    `You are in ${partyName}, and the names are drawn. This page is only yours. It shows the person you buy for, and their list when they add one.`,
+    `Welcome to ${partyName}! What a joy to have you with us. 🎁✨`,
     "",
     pageLink,
     "",
-    "Warm wishes,",
+    "Warm wishes 🎅",
     "Secret Santa",
   ].join("\n");
 }
