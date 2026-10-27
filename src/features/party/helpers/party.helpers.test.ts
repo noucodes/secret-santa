@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { guestPageLetter, wishlistUpdatedLetter } from "./party.helpers.ts";
+import { guestPageLetter, noteSentLetter, wishlistUpdatedLetter } from "./party.helpers.ts";
 
 describe("wishlistUpdatedLetter", () => {
   it("tells the buyer their giftee updated the list", () => {
@@ -8,6 +8,17 @@ describe("wishlistUpdatedLetter", () => {
 
     assert.match(letter, /Ada updated their wishlist/);
     assert.match(letter, /http:\/\/localhost:3000\/party\/buyer/);
+  });
+});
+
+describe("noteSentLetter", () => {
+  it("stays anonymous and keeps the note and page link", () => {
+    const letter = noteSentLetter("Wool socks", "http://localhost:3000/party/giftee");
+
+    assert.match(letter, /Your Secret Santa sent a note/);
+    assert.match(letter, /Wool socks/);
+    assert.match(letter, /http:\/\/localhost:3000\/party\/giftee/);
+    assert.equal(letter.includes("Ada"), false);
   });
 });
 

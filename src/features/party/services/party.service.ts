@@ -3,6 +3,7 @@ import { getAppOrigin, sendMail } from "@/shared/email/email";
 import { ParticipantRole, PartyStatus } from "@/features/party/party.constants";
 import {
   guestPageLetter,
+  noteSentLetter,
   orderedPair,
   parsePerson,
   wishlistUpdatedLetter,
@@ -645,6 +646,22 @@ export async function addNote(accessToken: string, body: string) {
       ${trimmed}
     )
   `;
+  const recipients = (await sql`
+    SELECT email, access_token
+    FROM participants
+    WHERE id = ${guest.recipient_id}
+  `) as { email: string; access_token: string }[];
+  const recipient = recipients[0];
+  if (!recipient) throw new PartyError("That person is no longer in the party.");
+  return { to: recipient.email, accessToken: recipient.access_token, body: trimmed };
+}
+
+export async function deliverNoteMail(to: string, accessToken: string, body: string) {
+  await sendMail({
+    to,
+    subject: "Your Secret Santa sent a note",
+    text: noteSentLetter(body, await guestLink(accessToken)),
+  });
 }
 
 export async function joinParty(joinToken: string, name: string, email: string) {

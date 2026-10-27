@@ -112,6 +112,10 @@ export function wishlistUpdatedLetter(gifteeName: string, pageLink: string) {
   return [`${gifteeName} updated their wishlist.`, "", pageLink].join("\n");
 }
 
+export function noteSentLetter(body: string, pageLink: string) {
+  return ["Your Secret Santa sent a note.", "", body, "", pageLink].join("\n");
+}
+
 export function orderedPair(leftId: string, rightId: string) {
   return leftId < rightId
     ? { participantAId: leftId, participantBId: rightId }

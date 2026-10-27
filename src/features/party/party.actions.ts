@@ -15,6 +15,7 @@ import {
   changeEmailAndResend,
   createParty,
   deleteParty,
+  deliverNoteMail,
   deliverWishlistMail,
   joinParty,
   PartyError,
@@ -228,13 +229,19 @@ export async function deleteWishlistAction(accessToken: string, itemId: string) 
 }
 
 export async function addNoteAction(accessToken: string, formData: FormData) {
+  let mailed: { to: string; accessToken: string; body: string } | undefined;
   try {
-    await addNote(accessToken, String(formData.get("body") ?? ""));
+    mailed = await addNote(accessToken, String(formData.get("body") ?? ""));
   } catch (caughtError) {
     if (typeof caughtError === "object" && caughtError !== null && "digest" in caughtError) throw caughtError;
     await redirectWithNotice(`/party/${accessToken}`, messageFrom(caughtError));
   }
   revalidatePath(`/party/${accessToken}`);
+  if (mailed) {
+    const { to, accessToken: recipientToken, body } = mailed;
+    after(() => deliverNoteMail(to, recipientToken, body));
+    await redirectWithNotice(`/party/${accessToken}`, "They will be emailed.");
+  }
   redirect(`/party/${accessToken}`);
 }
 
