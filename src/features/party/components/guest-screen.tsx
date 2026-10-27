@@ -115,7 +115,7 @@ export function GuestScreen({
       {guest.notes.length > 0 ? (
         <section className={panelClass}>
           <h2 className={blockTitleClass}>Notes to you</h2>
-          <p className="text-sm font-medium text-mute">The sender&apos;s name stays hidden.</p>
+          <p className="text-sm font-medium text-mute">An anonymous Santa sent a note.</p>
           {guest.notes.map((note) => (
             <p key={note.id} className="rounded-[10px] bg-lift px-4 py-3 text-sm">
               {note.body}
@@ -127,7 +127,6 @@ export function GuestScreen({
       {drawn ? (
         <form action={addNoteAction.bind(null, accessToken)} className={panelClass}>
           <h2 className={blockTitleClass}>Note to {guest.recipientName}</h2>
-          <p className="text-sm font-medium text-mute">They see the note. Your name stays off it.</p>
           <label className={labelClass}>
             Message
             <textarea name="body" required className={`${fieldClass} min-h-24`} />
