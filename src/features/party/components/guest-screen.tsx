@@ -36,16 +36,16 @@ function Fact({ icon, children }: { icon: ReactNode; children: string }) {
 function WishlistRows({ items, emptyLabel }: { items: WishlistItemView[]; emptyLabel: string }) {
   if (items.length === 0) {
     return (
-      <p className="flex flex-1 items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3 text-sm font-medium text-ink">
+      <p className="flex w-full shrink-0 items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3 text-sm font-medium text-ink">
         <GiftMark />
         {emptyLabel}
       </p>
     );
   }
   return (
-    <ul className="flex flex-1 flex-col gap-3">
+    <ul className="flex flex-col gap-3">
       {items.map((item) => (
-        <li key={item.id} className="flex items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3">
+        <li key={item.id} className="flex w-full shrink-0 items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3">
           <GiftMark />
           {item.url ? (
             <a

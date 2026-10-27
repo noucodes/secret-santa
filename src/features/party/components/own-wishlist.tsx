@@ -30,7 +30,7 @@ export function OwnWishlist({
 
   if (items.length === 0) {
     return (
-      <p className="flex flex-1 items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3 text-sm font-medium text-ink">
+      <p className="flex w-full shrink-0 items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3 text-sm font-medium text-ink">
         <GiftMark />
         {emptyLabel}
       </p>
@@ -38,11 +38,11 @@ export function OwnWishlist({
   }
 
   return (
-    <ul className="flex flex-1 flex-col gap-3">
+    <ul className="flex flex-col gap-3">
       {items.map((item) => {
         const editing = editingId === item.id;
         return (
-          <li key={item.id} className="rounded-[10px] border border-white/10 bg-lift px-4 py-3">
+          <li key={item.id} className="w-full shrink-0 rounded-[10px] border border-white/10 bg-lift px-4 py-3">
             {editing ? (
               <form action={updateWishlistAction.bind(null, accessToken, item.id)} className="space-y-3">
                 <label className={labelClass}>
