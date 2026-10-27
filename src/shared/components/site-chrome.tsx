@@ -33,23 +33,25 @@ const navLinks = [
 
 export function SiteHeader({ active, showNav = true }: { active?: string; showNav?: boolean }) {
   return (
-    <header className="relative z-10 mx-auto flex w-full max-w-[1100px] items-center justify-between gap-4 px-4 py-5 md:px-8">
+    <header className="relative z-10 mx-auto grid w-full max-w-[1100px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-5 md:px-8">
       <Link href="/" aria-label={`${ORG} home`} className={`rounded-sm ${focus}`}>
         <LogoMotion className="h-10 w-auto md:h-12" />
       </Link>
       {showNav ? (
-        <nav className="hidden items-center gap-8 text-[13px] md:flex">
+        <nav className="hidden min-w-0 text-[13px] md:grid md:grid-cols-4 md:justify-items-center">
           {navLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
-              className={`border-b-2 pb-1 transition-colors duration-150 ${link.href === active ? "border-ember" : "border-transparent text-ink/85 hover:text-ink"} ${focus}`}
+              className={`inline-flex h-11 items-center border-b-2 px-2 text-center transition-colors duration-150 ${link.href === active ? "border-ember" : "border-transparent text-ink/85 hover:text-ink"} ${focus}`}
             >
               {link.label}
             </Link>
           ))}
         </nav>
-      ) : null}
+      ) : (
+        <span aria-hidden />
+      )}
       <Link href="/create" className={`${pill} h-10 bg-gold px-5 text-[#2a1a00]`}>
         <Icon d={icons.gift} className="size-4" /> Join the draw
       </Link>
