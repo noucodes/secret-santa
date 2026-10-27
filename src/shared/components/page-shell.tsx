@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { inkButtonClass } from "@/shared/components/action-buttons";
+import { inkButtonClass } from "@/shared/components/button-classes";
 import { SiteFooter, SiteHeader } from "@/shared/components/site-chrome";
 
-export { DangerButton, GhostButton, InkButton, SubmitControl, dangerButtonClass, ghostButtonClass, inkButtonClass } from "@/shared/components/action-buttons";
+export { DangerButton, GhostButton, InkButton, SubmitControl } from "@/shared/components/action-buttons";
+export { dangerButtonClass, ghostButtonClass, inkButtonClass } from "@/shared/components/button-classes";
 export { Notice } from "@/shared/components/notice-toast";
 
 const focus =

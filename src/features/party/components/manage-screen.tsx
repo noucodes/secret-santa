@@ -28,6 +28,7 @@ import {
   pageTitleClass,
   panelClass,
   SubmitControl,
+  textLinkClass,
 } from "@/shared/components/page-shell";
 
 export function ManageScreen({
@@ -44,9 +45,13 @@ export function ManageScreen({
   const rosterLocked = party.status !== PartyStatus.Pending || party.exclusions.length > 0;
   const nameById = new Map(party.participants.map((participant) => [participant.id, participant.name]));
   const drawn = party.status === PartyStatus.Drawn;
+  const pending = party.status === PartyStatus.Pending;
+  const columnWidth = rosterLocked
+    ? { name: "w-[19%]", role: "w-[10%]", email: "w-[30%]", guest: "w-[29%]", action: "w-[12%]" }
+    : { name: "w-[19%]", role: "w-[10%]", email: "w-[26%]", guest: "w-[25%]", action: "w-[20%]" };
 
   return (
-    <div className="enter mx-auto max-w-2xl space-y-6">
+    <div className="enter mx-auto w-full space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className={pageTitleClass}>{party.name}</h1>
         <span className={drawn ? chipActiveClass : chipClass}>{drawn ? "Drawn" : "Waiting to draw"}</span>
@@ -69,31 +74,74 @@ export function ManageScreen({
             </InkButton>
           </form>
         </div>
-        {party.participants.map((participant) => (
-          <div key={participant.id} className="space-y-3 border-t border-line pt-4">
-            <p className="font-medium">
-              {participant.name}{" "}
-              {participant.role === ParticipantRole.Organizer ? (
-                <span className="font-normal text-mute">Organizer</span>
-              ) : null}
-            </p>
-            <CopyLine label="Guest page" path={`/party/${participant.accessToken}`} />
-            <form action={resendLinkAction.bind(null, manageToken, participant.id)} className="flex flex-wrap items-end gap-2">
-              <label className={`${labelClass} min-w-48 flex-1`}>
-                Email
-                <input name="email" type="email" defaultValue={participant.email} className={fieldClass} />
-              </label>
-              <GhostButton>Send</GhostButton>
-            </form>
-            {participant.role === ParticipantRole.Guest && !rosterLocked ? (
-              <form action={removeParticipantAction.bind(null, manageToken, participant.id)}>
-                <SubmitControl className="text-sm font-medium text-mute">Remove</SubmitControl>
-              </form>
-            ) : null}
-          </div>
-        ))}
+        <div className="min-w-0 overflow-x-auto rounded-[10px] border border-hairline">
+          <table className="w-full table-fixed border-collapse text-left">
+            <caption className="sr-only">People in this party</caption>
+            <thead className="bg-surface text-center text-[13px] font-medium text-mute">
+              <tr>
+                <th scope="col" className={`${columnWidth.name} px-5 py-2.5 font-medium`}>Name</th>
+                <th scope="col" className={`${columnWidth.role} px-5 py-2.5 font-medium`}>Role</th>
+                <th scope="col" className={`${columnWidth.email} px-5 py-2.5 font-medium`}>Email</th>
+                <th scope="col" className={`${columnWidth.guest} px-5 py-2.5 font-medium`}>Guest page</th>
+                <th scope="col" className={`${columnWidth.action} px-5 py-2.5 font-medium`}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {party.participants.map((participant) => {
+                const resendFormId = `resend-${participant.id}`;
+                return (
+                <tr key={participant.id} className="border-t border-line">
+                  <th scope="row" className="px-5 py-3 text-center align-middle font-medium">
+                    <span className="flex h-11 items-center justify-center truncate">{participant.name}</span>
+                  </th>
+                  <td className="px-5 py-3 text-center align-middle text-sm">
+                    <span className="flex h-11 items-center justify-center truncate">
+                      {participant.role === ParticipantRole.Organizer ? "Organizer" : "Guest"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3 text-center align-middle">
+                    <form id={resendFormId} action={resendLinkAction.bind(null, manageToken, participant.id)}>
+                      <input
+                        name="email"
+                        type="email"
+                        defaultValue={participant.email}
+                        aria-label={`Email for ${participant.name}`}
+                        className={`${fieldClass} mt-0 h-11 min-h-0 w-full text-center`}
+                      />
+                    </form>
+                  </td>
+                  <td className="px-5 py-3 text-center align-middle">
+                    <a
+                      href={`/party/${participant.accessToken}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`/party/${participant.accessToken}`}
+                      className={`${textLinkClass} flex h-11 w-full min-w-0 items-center justify-center px-2 hover:underline underline-offset-2`}
+                    >
+                      <span className="sr-only">Guest page </span>
+                      <span className="min-w-0 truncate text-center">{`/party/${participant.accessToken}`}</span>
+                    </a>
+                  </td>
+                  <td className="px-5 py-3 align-middle whitespace-nowrap">
+                    <div className="flex h-11 w-full items-center gap-2">
+                      <button type="submit" form={resendFormId} className={`${ghostButtonClass} min-w-0 flex-1`}>
+                        Send
+                      </button>
+                      {participant.role === ParticipantRole.Guest && !rosterLocked ? (
+                        <form action={removeParticipantAction.bind(null, manageToken, participant.id)} className="shrink-0">
+                          <SubmitControl className="text-sm font-medium text-mute">Remove</SubmitControl>
+                        </form>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
         {rosterLocked ? null : (
-          <form action={addParticipantAction.bind(null, manageToken)} className="grid gap-3 border-t border-line pt-4 sm:grid-cols-2">
+          <form action={addParticipantAction.bind(null, manageToken)} className="grid gap-3 sm:grid-cols-2">
             <label className={labelClass}>
               Name
               <input name="name" className={fieldClass} />
@@ -110,22 +158,44 @@ export function ManageScreen({
       <section className={panelClass}>
         <h2 className={blockTitleClass}>Exclusions</h2>
         <p className="text-sm font-medium text-mute">
-          These two cannot buy for each other. Needs 4 or more people, and only before the draw.
+          {drawn
+            ? party.exclusions.length === 0
+              ? "No pairs were blocked."
+              : "These pairs cannot buy for each other."
+            : "These two cannot buy for each other. Needs 4 or more people, and only before the draw."}
         </p>
-        {party.exclusions.length === 0 ? <p className="text-sm font-medium text-mute">No pairs blocked yet.</p> : null}
-        {party.exclusions.map((exclusion) => (
-          <div key={exclusion.id} className="flex items-center justify-between gap-3 text-sm">
-            <span>
-              {nameById.get(exclusion.participantAId)} and {nameById.get(exclusion.participantBId)}
-            </span>
-            {party.status === PartyStatus.Pending ? (
-              <form action={removeExclusionAction.bind(null, manageToken, exclusion.id)}>
-                <SubmitControl className="font-medium text-mute">Remove</SubmitControl>
-              </form>
-            ) : null}
+        {party.exclusions.length === 0 ? (drawn ? null : <p className="text-sm font-medium text-mute">No pairs blocked yet.</p>) : (
+          <div className="overflow-auto rounded-[10px] border border-hairline">
+            <table className="w-full border-collapse text-left">
+              <caption className="sr-only">Blocked pairs</caption>
+              <thead className="sticky top-0 z-10 bg-surface text-[13px] font-medium text-mute">
+                <tr>
+                  <th scope="col" className="px-3 py-2.5 font-medium">First</th>
+                  <th scope="col" className="px-3 py-2.5 font-medium">Second</th>
+                  {pending ? <th scope="col" className="px-3 py-2.5 font-medium">Action</th> : null}
+                </tr>
+              </thead>
+              <tbody>
+                {party.exclusions.map((exclusion) => (
+                  <tr key={exclusion.id} className="border-t border-line text-sm">
+                    <th scope="row" className="px-3 py-2 text-left align-middle font-medium">
+                      {nameById.get(exclusion.participantAId)}
+                    </th>
+                    <td className="px-3 py-2 align-middle">{nameById.get(exclusion.participantBId)}</td>
+                    {pending ? (
+                      <td className="px-3 py-2 align-middle">
+                        <form action={removeExclusionAction.bind(null, manageToken, exclusion.id)}>
+                          <SubmitControl className="font-medium text-mute">Remove</SubmitControl>
+                        </form>
+                      </td>
+                    ) : null}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ))}
-        {party.status === PartyStatus.Pending && party.participants.length >= 4 ? (
+        )}
+        {pending && party.participants.length >= 4 ? (
           <form action={addExclusionAction.bind(null, manageToken)} className="grid gap-3 sm:grid-cols-2">
             <label className={labelClass}>
               First person
@@ -155,23 +225,39 @@ export function ManageScreen({
       {drawn && reveal ? (
         <section className={panelClass}>
           <h2 className={blockTitleClass}>Matches</h2>
-          {party.participants.map((participant) => {
-            const recipientName = participant.recipientId
-              ? nameById.get(participant.recipientId)
-              : "nobody yet";
-            return (
-              <p key={participant.id} className="text-sm">
-                {participant.name} buys for {recipientName}
-              </p>
-            );
-          })}
+          <div className="overflow-auto rounded-[10px] border border-hairline">
+            <table className="w-full border-collapse text-left">
+              <caption className="sr-only">Who buys for whom</caption>
+              <thead className="sticky top-0 z-10 bg-surface text-[13px] font-medium text-mute">
+                <tr>
+                  <th scope="col" className="px-3 py-2.5 font-medium">Buys</th>
+                  <th scope="col" className="px-3 py-2.5 font-medium">For</th>
+                </tr>
+              </thead>
+              <tbody>
+                {party.participants.map((participant) => {
+                  const recipientName = participant.recipientId
+                    ? nameById.get(participant.recipientId)
+                    : "nobody yet";
+                  return (
+                    <tr key={participant.id} className="border-t border-line text-sm">
+                      <th scope="row" className="px-3 py-2 text-left align-middle font-medium">
+                        {participant.name}
+                      </th>
+                      <td className="px-3 py-2 align-middle">{recipientName}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </section>
       ) : null}
 
       <CopyLine label="Join link" path={`/join/${party.joinToken}`} />
 
       <div className="flex flex-wrap gap-3">
-        {party.status === PartyStatus.Pending ? (
+        {pending ? (
           <form action={startDrawAction.bind(null, manageToken)}>
             <InkButton>Start the draw</InkButton>
           </form>
