@@ -1,4 +1,5 @@
-import { GiftIcon } from "@phosphor-icons/react/ssr";
+import { CalendarBlankIcon, CoinsIcon, GiftIcon, MapPinIcon } from "@phosphor-icons/react/ssr";
+import type { ReactNode } from "react";
 import { OwnWishlist } from "@/features/party/components/own-wishlist";
 import { addNoteAction, addWishlistAction } from "@/features/party/party.actions";
 import { PartyStatus } from "@/features/party/party.constants";
@@ -10,7 +11,6 @@ import {
   hintClass,
   InkButton,
   labelClass,
-  MetaLine,
   Notice,
   pageTitleClass,
   panelClass,
@@ -24,17 +24,26 @@ function GiftMark() {
   );
 }
 
+function Fact({ icon, children }: { icon: ReactNode; children: string }) {
+  return (
+    <span className="inline-flex h-10 max-w-full items-center gap-2 rounded-full border border-white/15 bg-surface px-4 text-sm font-semibold text-ink">
+      <span className="shrink-0 text-gold">{icon}</span>
+      {children}
+    </span>
+  );
+}
+
 function WishlistRows({ items, emptyLabel }: { items: WishlistItemView[]; emptyLabel: string }) {
   if (items.length === 0) {
     return (
-      <p className="flex items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3 text-sm font-medium text-ink">
+      <p className="flex flex-1 items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3 text-sm font-medium text-ink">
         <GiftMark />
         {emptyLabel}
       </p>
     );
   }
   return (
-    <ul className="space-y-2">
+    <ul className="flex flex-1 flex-col gap-3">
       {items.map((item) => (
         <li key={item.id} className="flex items-center gap-3 rounded-[10px] border border-white/10 bg-lift px-4 py-3">
           <GiftMark />
@@ -66,8 +75,16 @@ export function GuestScreen({
   const drawn = guest.status === PartyStatus.Drawn && guest.recipientName;
 
   return (
-    <div className="enter mx-auto max-w-xl space-y-6">
-      <MetaLine parts={[guest.partyName, guest.eventDate, guest.budget ? `Budget ${guest.budget}` : ""]} />
+    <div className="enter w-full space-y-6">
+      <div className="flex flex-wrap gap-2">
+        {guest.partyName ? <Fact icon={<GiftIcon size={16} weight="fill" aria-hidden />}>{guest.partyName}</Fact> : null}
+        {guest.eventDate ? <Fact icon={<CalendarBlankIcon size={16} weight="fill" aria-hidden />}>{guest.eventDate}</Fact> : null}
+        {guest.location ? <Fact icon={<MapPinIcon size={16} weight="fill" aria-hidden />}>{guest.location}</Fact> : null}
+        {guest.budget ? <Fact icon={<CoinsIcon size={16} weight="fill" aria-hidden />}>{guest.budget}</Fact> : null}
+      </div>
+      {guest.message ? <p className="max-w-[65ch] text-sm font-medium text-mute">{guest.message}</p> : null}
+      <Notice message={notice} />
+
       {drawn ? (
         <div className={cardClass}>
           <p className="text-sm font-medium text-mute">Your match</p>
@@ -81,59 +98,62 @@ export function GuestScreen({
           <p className="text-sm font-medium text-mute">You can still fill your list. The name shows up here after the draw.</p>
         </div>
       )}
-      {guest.message ? <p className="text-sm font-medium text-mute">{guest.message}</p> : null}
-      <Notice message={notice} />
 
-      {drawn ? (
-        <section className={panelClass}>
-          <h2 className={blockTitleClass}>{guest.recipientName}&apos;s list</h2>
-          <WishlistRows items={guest.recipientWishlist} emptyLabel="Nothing in this list yet." />
+      <div className="grid items-stretch gap-6 lg:grid-cols-2">
+        {drawn ? (
+          <section className={`${panelClass} flex h-full flex-col`}>
+            <h2 className={blockTitleClass}>{guest.recipientName}&apos;s list</h2>
+            <WishlistRows items={guest.recipientWishlist} emptyLabel="Nothing in this list yet." />
+          </section>
+        ) : null}
+
+        <section className={`${panelClass} flex h-full flex-col ${drawn ? "" : "lg:col-span-2"}`}>
+          <h2 className={blockTitleClass}>Your list</h2>
+          <OwnWishlist
+            accessToken={accessToken}
+            items={guest.ownWishlist}
+            emptyLabel="Nothing here yet. Add a gift below."
+          />
+          <form action={addWishlistAction.bind(null, accessToken)} className="space-y-3">
+            <label className={labelClass}>
+              Gift idea
+              <input name="label" required className={fieldClass} />
+            </label>
+            <label className={labelClass}>
+              Link
+              <span className={hintClass}>Optional.</span>
+              <input name="url" type="url" className={fieldClass} />
+            </label>
+            <InkButton>Add idea</InkButton>
+          </form>
         </section>
-      ) : null}
+      </div>
 
-      <section className={panelClass}>
-        <h2 className={blockTitleClass}>Your list</h2>
-        <OwnWishlist
-          accessToken={accessToken}
-          items={guest.ownWishlist}
-          emptyLabel="Nothing here yet. Add a gift below."
-        />
-        <form action={addWishlistAction.bind(null, accessToken)} className="space-y-3">
-          <label className={labelClass}>
-            Gift idea
-            <input name="label" required className={fieldClass} />
-          </label>
-          <label className={labelClass}>
-            Link
-            <span className={hintClass}>Optional.</span>
-            <input name="url" type="url" className={fieldClass} />
-          </label>
-          <InkButton>Add idea</InkButton>
-        </form>
-      </section>
-
-      {guest.notes.length > 0 ? (
+      <div className="space-y-6">
         <section className={panelClass}>
           <h2 className={blockTitleClass}>Notes to you</h2>
-          <p className="text-sm font-medium text-mute">An anonymous Santa sent a note.</p>
-          {guest.notes.map((note) => (
-            <p key={note.id} className="rounded-[10px] bg-lift px-4 py-3 text-sm">
-              {note.body}
-            </p>
-          ))}
+          <p className="text-sm font-medium text-mute">From your Secret Santa.</p>
+          {guest.notes.length > 0 ? (
+            guest.notes.map((note) => (
+              <p key={note.id} className="rounded-[10px] bg-lift px-4 py-3 text-sm">
+                {note.body}
+              </p>
+            ))
+          ) : (
+            <p className="rounded-[10px] bg-lift px-4 py-3 text-sm font-medium text-ink">No notes yet.</p>
+          )}
         </section>
-      ) : null}
-
-      {drawn ? (
-        <form action={addNoteAction.bind(null, accessToken)} className={panelClass}>
-          <h2 className={blockTitleClass}>Note to {guest.recipientName}</h2>
-          <label className={labelClass}>
-            Message
-            <textarea name="body" required className={`${fieldClass} min-h-24`} />
-          </label>
-          <InkButton>Send note</InkButton>
-        </form>
-      ) : null}
+        {drawn ? (
+          <form action={addNoteAction.bind(null, accessToken)} className={panelClass}>
+            <h2 className={blockTitleClass}>Note to {guest.recipientName}</h2>
+            <label className={labelClass}>
+              Message
+              <textarea name="body" required className={`${fieldClass} min-h-24`} />
+            </label>
+            <InkButton>Send note</InkButton>
+          </form>
+        ) : null}
+      </div>
     </div>
   );
 }
