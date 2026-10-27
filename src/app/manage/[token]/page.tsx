@@ -22,7 +22,7 @@ export default async function ManagePage({
     throw caughtError;
   }
   return (
-    <PageShell>
+    <PageShell showNav={false}>
       <ManageScreen
         manageToken={token}
         party={party}

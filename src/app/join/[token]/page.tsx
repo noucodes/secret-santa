@@ -9,7 +9,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
   const party = await getJoinParty(token);
   if (!party) notFound();
   return (
-    <PageShell>
+    <PageShell showNav={false}>
       <JoinScreen joinToken={token} party={party} notice={await readNotice()} />
     </PageShell>
   );

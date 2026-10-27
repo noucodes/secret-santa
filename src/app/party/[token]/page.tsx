@@ -15,7 +15,7 @@ export default async function GuestPage({ params }: { params: Promise<{ token: s
     throw caughtError;
   }
   return (
-    <PageShell>
+    <PageShell showNav={false}>
       <GuestScreen accessToken={token} guest={guest} notice={notice} />
     </PageShell>
   );

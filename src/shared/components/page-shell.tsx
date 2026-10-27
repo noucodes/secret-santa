@@ -30,7 +30,15 @@ export const blockTitleClass = "text-[2rem] leading-[1.13] tracking-[-0.031em] t
 export const fieldClass =
   "mt-2 min-h-12 w-full rounded-[10px] border border-hairline bg-lift px-3.5 text-[15px] leading-[1.3] tracking-[-0.01em] text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-mute/70 focus:border-gold focus:shadow-[0_0_0_3px_rgba(248,197,68,0.15)]";
 
-export function PageShell({ children, active }: { children: ReactNode; active?: string }) {
+export function PageShell({
+  children,
+  active,
+  showNav = true,
+}: {
+  children: ReactNode;
+  active?: string;
+  showNav?: boolean;
+}) {
   return (
     <div className="relative isolate flex min-h-[100dvh] flex-col overflow-x-clip bg-[#010f39]">
       {/* Faded hero art keeps inner pages in the same winter scene as the home page */}
@@ -38,7 +46,7 @@ export function PageShell({ children, active }: { children: ReactNode; active?: 
         aria-hidden
         className="absolute inset-x-0 top-0 -z-10 h-[38rem] bg-[url(/santa/hero.png)] bg-cover bg-center opacity-45 [mask-image:linear-gradient(#000_25%,transparent)]"
       />
-      <SiteHeader active={active} />
+      <SiteHeader active={active} showNav={showNav} />
       <main className="mx-auto w-full max-w-[1199px] flex-1 px-4 pt-8 pb-16 md:px-8 md:pt-12">{children}</main>
       <SiteFooter />
     </div>
