@@ -1,4 +1,5 @@
-import { EnvelopeSimpleIcon } from "@phosphor-icons/react/ssr";
+import { CalendarBlankIcon, CoinsIcon, EnvelopeSimpleIcon, MapPinIcon, UsersThreeIcon } from "@phosphor-icons/react/ssr";
+import type { ReactNode } from "react";
 import {
   addExclusionAction,
   addParticipantAction,
@@ -23,13 +24,21 @@ import {
   GhostButton,
   InkButton,
   labelClass,
-  MetaLine,
   Notice,
   pageTitleClass,
   panelClass,
   SubmitControl,
   textLinkClass,
 } from "@/shared/components/page-shell";
+
+function Fact({ icon, children }: { icon: ReactNode; children: string }) {
+  return (
+    <span className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 bg-surface px-4 text-sm font-semibold text-ink">
+      <span className="text-gold">{icon}</span>
+      {children}
+    </span>
+  );
+}
 
 export function ManageScreen({
   manageToken,
@@ -56,13 +65,13 @@ export function ManageScreen({
         <h1 className={pageTitleClass}>{party.name}</h1>
         <span className={drawn ? chipActiveClass : chipClass}>{drawn ? "Drawn" : "Waiting to draw"}</span>
       </div>
-      <MetaLine
-        parts={[party.eventDate, party.location, party.budget, `${party.participants.length} people`]}
-      />
+      <div className="flex flex-wrap gap-2">
+        {party.eventDate ? <Fact icon={<CalendarBlankIcon size={16} weight="fill" aria-hidden />}>{party.eventDate}</Fact> : null}
+        {party.location ? <Fact icon={<MapPinIcon size={16} weight="fill" aria-hidden />}>{party.location}</Fact> : null}
+        {party.budget ? <Fact icon={<CoinsIcon size={16} weight="fill" aria-hidden />}>{party.budget}</Fact> : null}
+        <Fact icon={<UsersThreeIcon size={16} weight="fill" aria-hidden />}>{`${party.participants.length} people`}</Fact>
+      </div>
       <Notice message={notice} />
-      <p className="text-sm font-medium text-mute">
-        If an email does not arrive, copy the links on this page. Guests only see who they buy for.
-      </p>
 
       <section className={panelClass}>
         <div className="flex flex-wrap items-center justify-between gap-3">
